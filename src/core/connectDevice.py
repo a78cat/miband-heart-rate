@@ -8,15 +8,12 @@ from bleak import BleakScanner, BleakClient
 HEART_RATE_SERVICE_UUID = '0000180d-0000-1000-8000-00805f9b34fb'
 HEART_RATE_MEASUREMENT_UUID = '00002a37-0000-1000-8000-00805f9b34fb'
 DEVICE_NAME_UUID = '00002a00-0000-1000-8000-00805f9b34fb'
-
 # 存储最新心率数据（线程安全，避免多请求冲突）
 heart_rate_data = {
     'heart_rate': 0,  # 心率值（次/分钟）
     'timestamp': 0,  # 数据更新时间戳
     'device_id': '0'  # 设备ID（可选）
 }
-
-
 # data_lock = threading.Lock()
 
 

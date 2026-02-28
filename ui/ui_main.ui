@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>314</width>
-    <height>134</height>
+    <width>277</width>
+    <height>104</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,13 +35,6 @@
        <widget class="QPushButton" name="pushButton_closeHttp">
         <property name="text">
          <string>关闭http服务</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_quit">
-        <property name="text">
-         <string>关闭软件</string>
         </property>
        </widget>
       </item>

@@ -22,7 +22,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(314, 134)
+        MainWindow.resize(277, 104)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -44,11 +44,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.pushButton_closeHttp)
 
-        self.pushButton_quit = QPushButton(self.centralwidget)
-        self.pushButton_quit.setObjectName(u"pushButton_quit")
-
-        self.verticalLayout.addWidget(self.pushButton_quit)
-
 
         self.horizontalLayout.addLayout(self.verticalLayout)
 
@@ -65,6 +60,5 @@ class Ui_MainWindow(object):
         self.pushButton_connectDevice.setText(QCoreApplication.translate("MainWindow", u"\u8fde\u63a5\u5fc3\u7387\u8bbe\u5907", None))
         self.pushButton_openHttp.setText(QCoreApplication.translate("MainWindow", u"\u5f00\u542fhttp\u670d\u52a1", None))
         self.pushButton_closeHttp.setText(QCoreApplication.translate("MainWindow", u"\u5173\u95edhttp\u670d\u52a1", None))
-        self.pushButton_quit.setText(QCoreApplication.translate("MainWindow", u"\u5173\u95ed\u8f6f\u4ef6", None))
     # retranslateUi
 
