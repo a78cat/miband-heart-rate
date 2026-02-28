@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QMainWindow, QMessageBox
 from flask import Flask
 from werkzeug.serving import make_server
 
-from src.core.connectDevice import run_hr_monitor
 from src.route.rt_index import register_index_routes
 from src.view.ui_main import Ui_MainWindow
 
@@ -21,32 +20,32 @@ HTTP_SERVER_PORT = 5001
 
 
 # 蓝牙设备连接线程
-class BluetoothConnectThread(QThread):
+# class BluetoothConnectThread(QThread):
     # 定义信号：连接成功、失败、心率数据更新
-    connect_success = Signal(str)  # 传递设备名称
-    connect_failed = Signal(str)  # 传递失败原因
-    heart_rate_update = Signal(int)  # 传递心率值
-
-    def __init__(self):
-        super().__init__()
-        self.is_running = False
-
-    def run(self):
-        """线程执行体：运行蓝牙异步任务"""
-        self.is_running = True
-        try:
-            # 运行异步蓝牙监控函数
-            asyncio.run(run_hr_monitor())
-        except Exception as e:
-            err_msg = f"设备连接失败：{str(e)}"
-            self.connect_failed.emit(err_msg)
-            self.is_running = False
-
-    def stop(self):
-        """停止蓝牙连接线程"""
-        self.is_running = False
-        self.quit()
-        self.wait()
+    # connect_success = Signal(str)  # 传递设备名称
+    # connect_failed = Signal(str)  # 传递失败原因
+    # heart_rate_update = Signal(int)  # 传递心率值
+    #
+    # def __init__(self):
+    #     super().__init__()
+    #     self.is_running = False
+    #
+    # def run(self):
+    #     """线程执行体：运行蓝牙异步任务"""
+    #     self.is_running = True
+    #     try:
+    #         # 运行异步蓝牙监控函数
+    #         asyncio.run(run_hr_monitor())
+    #     except Exception as e:
+    #         err_msg = f"设备连接失败：{str(e)}"
+    #         self.connect_failed.emit(err_msg)
+    #         self.is_running = False
+    #
+    # def stop(self):
+    #     """停止蓝牙连接线程"""
+    #     self.is_running = False
+    #     self.quit()
+    #     self.wait()
 
 
 class FlaskServerThread(QThread):
@@ -95,37 +94,37 @@ class MainApp(QMainWindow, Ui_MainWindow):
 
         self.init_slot()
         self.flask_thread: FlaskServerThread = None
-        self.bluetooth_thread: BluetoothConnectThread = None
+        # self.bluetooth_thread: BluetoothConnectThread = None
         self.app = Flask(__name__)
         register_index_routes(self.app)
 
     def init_slot(self):
-        self.pushButton_connectDevice.clicked.connect(self.slot_pushButton_connectDevice)
+        # self.pushButton_connectDevice.clicked.connect(self.slot_pushButton_connectDevice)
         self.pushButton_openHttp.clicked.connect(self.slot_pushButton_openHttp)
         self.pushButton_closeHttp.clicked.connect(self.slot_pushButton_closeHttp)
 
     def slot_pushButton_connectDevice(self):
         logger.info("用户点击了连接设备按钮")
-        # 防止重复连接
-        if self.bluetooth_thread is not None and self.bluetooth_thread.is_running:
-            QMessageBox.warning(self, "提示", "设备正在连接中，请勿重复点击！")
-            return
-
-        # 初始化并启动蓝牙线程
-        self.bluetooth_thread = BluetoothConnectThread()
-        # 绑定蓝牙线程信号
-        self.bluetooth_thread.connect_success.connect(
-            lambda dev_name: QMessageBox.information(self, "成功", f"已连接到设备：{dev_name}")
-        )
-        self.bluetooth_thread.connect_failed.connect(
-            lambda msg: QMessageBox.critical(self, "失败", msg)
-        )
-        # （可选）绑定心率更新信号，用于UI显示心率
-        # self.bluetooth_thread.heart_rate_update.connect(self.update_heart_rate_ui)
-
-        # 启动蓝牙线程
-        self.bluetooth_thread.start()
-        logger.info("蓝牙设备连接线程已启动，开始扫描设备...")
+        # # 防止重复连接
+        # if self.bluetooth_thread is not None and self.bluetooth_thread.is_running:
+        #     QMessageBox.warning(self, "提示", "设备正在连接中，请勿重复点击！")
+        #     return
+        #
+        # # 初始化并启动蓝牙线程
+        # self.bluetooth_thread = BluetoothConnectThread()
+        # # 绑定蓝牙线程信号
+        # self.bluetooth_thread.connect_success.connect(
+        #     lambda dev_name: QMessageBox.information(self, "成功", f"已连接到设备：{dev_name}")
+        # )
+        # self.bluetooth_thread.connect_failed.connect(
+        #     lambda msg: QMessageBox.critical(self, "失败", msg)
+        # )
+        # # （可选）绑定心率更新信号，用于UI显示心率
+        # # self.bluetooth_thread.heart_rate_update.connect(self.update_heart_rate_ui)
+        #
+        # # 启动蓝牙线程
+        # self.bluetooth_thread.start()
+        # logger.info("蓝牙设备连接线程已启动，开始扫描设备...")
 
     def slot_pushButton_openHttp(self):
         logger.info("用户点击了开启http按钮")
