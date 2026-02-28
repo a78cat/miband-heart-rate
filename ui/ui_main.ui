@@ -6,34 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>579</width>
-    <height>485</height>
+    <width>314</width>
+    <height>134</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="title">
-         <string>日志框</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <property name="spacing">
-          <number>6</number>
-         </property>
-         <item>
-          <widget class="QTextBrowser" name="textBrowser"/>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </item>
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -47,6 +28,20 @@
        <widget class="QPushButton" name="pushButton_openHttp">
         <property name="text">
          <string>开启http服务</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_closeHttp">
+        <property name="text">
+         <string>关闭http服务</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_quit">
+        <property name="text">
+         <string>关闭软件</string>
         </property>
        </widget>
       </item>

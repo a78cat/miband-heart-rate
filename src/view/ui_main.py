@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main.ui'
+## Form generated from reading UI file 'ui_main.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.3
 ##
@@ -15,37 +15,18 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QMainWindow,
-    QPushButton, QSizePolicy, QTextBrowser, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QPushButton,
+    QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(579, 485)
+        MainWindow.resize(314, 134)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.groupBox = QGroupBox(self.centralwidget)
-        self.groupBox.setObjectName(u"groupBox")
-        self.verticalLayout_3 = QVBoxLayout(self.groupBox)
-        self.verticalLayout_3.setSpacing(6)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.textBrowser = QTextBrowser(self.groupBox)
-        self.textBrowser.setObjectName(u"textBrowser")
-
-        self.verticalLayout_3.addWidget(self.textBrowser)
-
-
-        self.verticalLayout_2.addWidget(self.groupBox)
-
-
-        self.horizontalLayout.addLayout(self.verticalLayout_2)
-
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.pushButton_connectDevice = QPushButton(self.centralwidget)
@@ -58,11 +39,20 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.pushButton_openHttp)
 
+        self.pushButton_closeHttp = QPushButton(self.centralwidget)
+        self.pushButton_closeHttp.setObjectName(u"pushButton_closeHttp")
+
+        self.verticalLayout.addWidget(self.pushButton_closeHttp)
+
+        self.pushButton_quit = QPushButton(self.centralwidget)
+        self.pushButton_quit.setObjectName(u"pushButton_quit")
+
+        self.verticalLayout.addWidget(self.pushButton_quit)
+
 
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.horizontalLayout.setStretch(0, 1)
-        self.horizontalLayout.setStretch(1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -72,8 +62,9 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u65e5\u5fd7\u6846", None))
         self.pushButton_connectDevice.setText(QCoreApplication.translate("MainWindow", u"\u8fde\u63a5\u5fc3\u7387\u8bbe\u5907", None))
         self.pushButton_openHttp.setText(QCoreApplication.translate("MainWindow", u"\u5f00\u542fhttp\u670d\u52a1", None))
+        self.pushButton_closeHttp.setText(QCoreApplication.translate("MainWindow", u"\u5173\u95edhttp\u670d\u52a1", None))
+        self.pushButton_quit.setText(QCoreApplication.translate("MainWindow", u"\u5173\u95ed\u8f6f\u4ef6", None))
     # retranslateUi
 

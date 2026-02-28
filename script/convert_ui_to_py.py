@@ -3,8 +3,10 @@ import subprocess
 
 
 def convert_ui_to_py(ui_dir, py_dir):
+
     if not os.path.exists(py_dir):
         os.makedirs(py_dir)
+
     for ui_file in os.listdir(ui_dir):
         if ui_file.endswith('.ui'):
             ui_path = os.path.join(ui_dir, ui_file)
