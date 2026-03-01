@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class FlaskServerThread(QThread):
-    start_success = Signal()
-    start_failed = Signal(str)
-    stop_success = Signal()
+    signal_status = Signal(str)
 
     def __init__(self, app: Flask):
         super().__init__()
@@ -27,20 +25,20 @@ class FlaskServerThread(QThread):
         try:
             self.thread.start()
             self.is_server_running = True
-            self.start_success.emit()
             logger.info(f"HTTP服务启动成功，端口：{HTTP_SERVER_PORT}")
+            self.signal_status.emit(f"HTTP服务启动成功，端口：{HTTP_SERVER_PORT}")
             # 阻塞线程直到服务停止
         except Exception as e:
-            err_msg = f"HTTP服务启动失败：{str(e)}"
-            logger.error(err_msg)
-            self.start_failed.emit(err_msg)
+            logger.error(f"HTTP服务启动失败：{str(e)}")
+            self.signal_status.emit(f"HTTP服务启动失败：{str(e)}")
 
     def stop_server(self):
         """停止Flask服务"""
         if self.server:
             try:
                 self.server.shutdown()
-                self.stop_success.emit()
+                self.signal_status.emit("HTTP服务停止成功")
                 logger.info("HTTP服务停止成功")
             except Exception as e:
+                self.signal_status.emit(f"HTTP服务停止失败{str(e)}")
                 logger.error(f"HTTP服务停止失败：{str(e)}")

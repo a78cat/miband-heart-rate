@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from PySide6.QtCore import QThread, Signal
-from bleak import BleakClient
+from bleak import BleakClient, BleakScanner
 
 logger = logging.getLogger(__name__)
 # 心率服务和特征UUID
@@ -11,8 +11,38 @@ HEART_RATE_MEASUREMENT_UUID = '00002a37-0000-1000-8000-00805f9b34fb'
 DEVICE_NAME_UUID = '00002a00-0000-1000-8000-00805f9b34fb'
 
 
+class ScanBluetoothDevicesThread(QThread):
+    signal_devices_list = Signal(list)
+
+    def run(self):
+        logger.info("执行扫描蓝牙设备")
+        device_list = []
+        try:
+            # 异步扫描设备, 获取带有心率服务UUID的设备
+            devices = asyncio.run(
+                BleakScanner.discover(
+                    timeout=3.0,
+                    filters={"service_uuids": [HEART_RATE_SERVICE_UUID.lower()]}
+                )
+            )
+
+            # 整理设备列表（名称, 地址）
+            for d in devices:
+                device_name = d.name if d.name else f"未知设备({d.address[:8]})"
+                device_list.append((device_name, d.address))
+
+            logger.info(f"蓝牙扫描完成，找到{len(device_list)}个心率设备")
+
+        except Exception as e:
+            err_msg = f"扫描失败：{str(e)}"
+            logger.error(err_msg)
+        finally:
+            self.signal_devices_list.emit(device_list)
+
+
 class ConnectBluetoothDeviceThread(QThread):
     signal_hart_rate_data = Signal(int)
+    signal_status = Signal(str)
 
     def __init__(self, address: str):
         super().__init__()
@@ -43,13 +73,13 @@ class ConnectBluetoothDeviceThread(QThread):
                 if self.client.is_connected:
                     await self.client.stop_notify(HEART_RATE_MEASUREMENT_UUID)
                     await self.client.disconnect()
-                    self.signal_hart_rate_data.emit(-1)
+                    self.signal_hart_rate_data.emit(0)
                     logger.info('设备断开连接')
 
             except Exception as e:
                 err_msg = f"连接/接收数据异常：{str(e)}"
                 logger.error(err_msg)
-                self.signal_connect_status.emit(err_msg)
+                self.signal_status.emit(err_msg)
 
         asyncio.run(connect_device())
 

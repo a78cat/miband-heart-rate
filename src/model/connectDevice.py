@@ -3,7 +3,7 @@ import logging
 import time
 
 import requests
-from bleak import BleakScanner, BleakClient
+from bleak import BleakClient
 
 # 心率服务和特征UUID
 HEART_RATE_SERVICE_UUID = '0000180d-0000-1000-8000-00805f9b34fb'
@@ -16,42 +16,13 @@ heart_rate_data = {
     'timestamp': 0,  # 数据更新时间戳
     'device_id': '0'  # 设备ID（可选）
 }
+
+
 # data_lock = threading.Lock()
 
 
-def scan_devices():
-    """
-    扫描到的蓝牙设备名称与地址
-    :return: device_list = [(name, address)]
-    """
-    device_list = []
-    try:
-
-        # 异步扫描设备, 获取带有心率服务UUID的设备
-        devices = asyncio.run(
-            BleakScanner.discover(
-                timeout=5.0,
-                filters={"service_uuids": [HEART_RATE_SERVICE_UUID.lower()]}
-            )
-        )
-
-        # 整理设备列表（名称, 地址）
-        for d in devices:
-            device_name = d.name if d.name else f"未知设备({d.address[:8]})"
-            device_list.append((device_name, d.address))
-
-        logger.info(f"蓝牙扫描完成，找到{len(device_list)}个心率设备")
-
-    except Exception as e:
-        err_msg = f"扫描失败：{str(e)}"
-
-        logger.error(err_msg)
-    finally:
-        return device_list
-
-
 # 数据处理回调函数
-def _handle_heart_rate_notification(data1: str, data2: bytearray):
+def _handle_heart_rate_notification(_, data2: bytearray):
     print('处理心率数据中')
     heart_rate_data['heart_rate'] = data2[1]
     heart_rate_data['timestamp'] = int(time.time() * 1000)
@@ -83,17 +54,3 @@ async def connect_device(address: str):
 
         while client.is_connected:
             await asyncio.sleep(1)
-
-
-if __name__ == '__main__':
-    # print(scan_devices())
-    # bdp = BluetoothDevicesProcess()
-    # devices = bdp.scan_devices()
-    # for d in devices:
-    #     print(d)
-    # 正确写法：用 asyncio.run() 运行协程
-    asyncio.run(connect_device(address='F7:1F:00:73:7F:67'))
-    # try:
-    #     asyncio.run(run_hr_monitor())
-    # except KeyboardInterrupt:
-    #     print('\nMonitoring stopped.')

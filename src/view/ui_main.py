@@ -25,7 +25,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(652, 274)
+        MainWindow.resize(653, 294)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -48,6 +48,7 @@ class Ui_MainWindow(object):
         __qtablewidgetitem1.setFont(font);
         self.tableWidget_devicesList.setHorizontalHeaderItem(1, __qtablewidgetitem1)
         self.tableWidget_devicesList.setObjectName(u"tableWidget_devicesList")
+        self.tableWidget_devicesList.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.tableWidget_devicesList.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.tableWidget_devicesList.horizontalHeader().setVisible(True)
 
@@ -118,9 +119,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         MainWindow.setCentralWidget(self.centralwidget)
-        self.statusBar = QStatusBar(MainWindow)
-        self.statusBar.setObjectName(u"statusBar")
-        MainWindow.setStatusBar(self.statusBar)
+        self.statusBar_heartRate = QStatusBar(MainWindow)
+        self.statusBar_heartRate.setObjectName(u"statusBar_heartRate")
+        MainWindow.setStatusBar(self.statusBar_heartRate)
 
         self.retranslateUi(MainWindow)
 

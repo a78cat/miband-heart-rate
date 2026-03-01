@@ -1,11 +1,10 @@
 import logging
 
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QHeaderView, QAbstractItemView
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QHeaderView, QAbstractItemView, QLabel
 from flask import Flask
 
-from src.model.thread_connect_bluetooth_device import ConnectBluetoothDeviceThread
+from src.model.thread_connect_bluetooth_device import ConnectBluetoothDeviceThread, ScanBluetoothDevicesThread
 from src.model.thread_flask_server import FlaskServerThread
-from src.model.thread_scan_bluetooth_devices import ScanBluetoothDevicesThread
 from src.route.rt_index import register_index_routes
 from src.view.ui_main import Ui_MainWindow
 
@@ -41,7 +40,13 @@ class MainApp(QMainWindow, Ui_MainWindow):
         self.textBrowser_log.append(f'连接中')
 
         self.thread_connect_device = ConnectBluetoothDeviceThread(self.lineEdit_deviceAddress.text())
+        # self.thread_connect_device.signal_hart_rate_data.connect(
+        #     lambda data: self.textBrowser_log.append(str(data))
+        # )
         self.thread_connect_device.signal_hart_rate_data.connect(
+            lambda data: self.statusBar_heartRate.showMessage(f'当前心率: {str(data)}')
+        )
+        self.thread_connect_device.signal_status.connect(
             lambda data: self.textBrowser_log.append(str(data))
         )
         self.thread_connect_device.start()
@@ -49,6 +54,7 @@ class MainApp(QMainWindow, Ui_MainWindow):
     def slot_pushButton_disconnectDevice(self):
         logger.info("用户点击了按钮-断开设备")
         self.textBrowser_log.append(f'断开连接中...')
+
         if self.thread_connect_device and self.thread_connect_device.isRunning():
             self.thread_connect_device.stop()
             self.textBrowser_log.append("已停止接收心率数据")
@@ -57,10 +63,10 @@ class MainApp(QMainWindow, Ui_MainWindow):
 
     def slot_pushButton_scanDevice(self):
         logger.info("用户点击了按钮-扫描设备")
-        self.textBrowser_log.append('扫描中，等待5秒')
+        self.textBrowser_log.append('扫描中，等待3秒')
 
         def devices_list_process(data: list):
-            self.tableWidget_devicesList.resizeColumnsToContents()
+            # self.tableWidget_devicesList.resizeColumnsToContents()
             for i in data:
                 logger.info(i[0] + ' ' + i[1])
                 row = self.tableWidget_devicesList.rowCount()
@@ -89,11 +95,8 @@ class MainApp(QMainWindow, Ui_MainWindow):
         # 绑定http路由
         register_index_routes(app)
         # 绑定线程信号
-        self.thread_flask.start_success.connect(
-            lambda: QMessageBox.information(self, "成功", "HTTP服务启动成功！")
-        )
-        self.thread_flask.start_failed.connect(
-            lambda msg: QMessageBox.critical(self, "失败", msg)
+        self.thread_flask.signal_status.connect(
+            lambda data: self.textBrowser_log.append(str(data))
         )
         self.thread_flask.start()
 
