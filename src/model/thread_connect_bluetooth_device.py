@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+import requests
 from PySide6.QtCore import QThread, Signal
 from bleak import BleakClient, BleakScanner
 
@@ -52,6 +53,14 @@ class ConnectBluetoothDeviceThread(QThread):
         logger.info(address)
 
     def run(self):
+        # 数据处理回调函数
+        def _handle_heart_rate_notification(_, data: bytearray):
+            self.signal_hart_rate_data.emit(data[1])
+            requests.post(
+                'http://127.0.0.1:5001/api/heart_rate',
+                json={'heart_rate': data[1]}
+            )
+
         async def connect_device():
             logger.info(f'执行设备连接')
             self.client = BleakClient(self.address)
@@ -59,12 +68,14 @@ class ConnectBluetoothDeviceThread(QThread):
                 await self.client.connect()
                 if not self.client.is_connected:
                     logger.info('连接失败')
+                    self.signal_status.emit('连接失败')
                     return
 
-                await self.client.start_notify(
-                    HEART_RATE_MEASUREMENT_UUID,
-                    lambda _, data: self.signal_hart_rate_data.emit(data[1]))
-                logger.info('接收心率数据中')
+                logger.info('正在处理心率数据http post')
+                self.signal_status.emit('正在post心率数据,请打开http服务')
+                await self.client.start_notify(HEART_RATE_MEASUREMENT_UUID, _handle_heart_rate_notification)
+                logger.info('已连接')
+                self.signal_status.emit('已连接')
 
                 while self.is_running and self.client.is_connected:
                     await asyncio.sleep(1)
@@ -85,9 +96,11 @@ class ConnectBluetoothDeviceThread(QThread):
 
     def stop(self):
         """外部调用此方法，优雅停止线程"""
-        logger.info("开始停止蓝牙连接线程")
+        logger.info("停止蓝牙连接线程")
+        self.signal_status.emit("正在断开蓝牙连接")
         self.is_running = False  # 置为False，让循环退出
         # 等待线程结束（最多等3秒，避免卡死）
         self.quit()
         # self.wait()
         logger.info("蓝牙连接线程已停止")
+        self.signal_status.emit("蓝牙连接线程已停止")
