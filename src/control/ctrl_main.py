@@ -28,6 +28,7 @@ class MainApp(QMainWindow, Ui_MainWindow):
         # pushbutton 按钮绑定
         self.pushButton_scanDevice.clicked.connect(self.slot_pushButton_scanDevice)
         self.pushButton_connectDevice.clicked.connect(self.slot_pushButton_connectDevice)
+        self.pushButton_disconnectDevice.clicked.connect(self.slot_pushButton_disconnectDevice)
         self.pushButton_openHttp.clicked.connect(self.slot_pushButton_openHttp)
         self.pushButton_closeHttp.clicked.connect(self.slot_pushButton_closeHttp)
         # 初始化线程
@@ -44,6 +45,15 @@ class MainApp(QMainWindow, Ui_MainWindow):
             lambda data: self.textBrowser_log.append(str(data))
         )
         self.thread_connect_device.start()
+
+    def slot_pushButton_disconnectDevice(self):
+        logger.info("用户点击了按钮-断开设备")
+        self.textBrowser_log.append(f'断开连接中...')
+        if self.thread_connect_device and self.thread_connect_device.isRunning():
+            self.thread_connect_device.stop()
+            self.textBrowser_log.append("已停止接收心率数据")
+        else:
+            self.textBrowser_log.append("当前无正在运行的蓝牙连接")
 
     def slot_pushButton_scanDevice(self):
         logger.info("用户点击了按钮-扫描设备")

@@ -17,20 +17,47 @@ class ConnectBluetoothDeviceThread(QThread):
     def __init__(self, address: str):
         super().__init__()
         self.address = address
+        self.is_running = True
+        self.client = None
         logger.info(address)
 
     def run(self):
-        async def connect_device(address: str):
-            logger.info("执行设备连接")
-            async with BleakClient(address) as client:
-                if not client.is_connected:
+        async def connect_device():
+            logger.info(f'执行设备连接')
+            self.client = BleakClient(self.address)
+            try:
+                await self.client.connect()
+                if not self.client.is_connected:
                     logger.info('连接失败')
-                    self.quit()
-                await client.start_notify(
+                    return
+
+                await self.client.start_notify(
                     HEART_RATE_MEASUREMENT_UUID,
-                    lambda data1, data2: self.signal_hart_rate_data.emit(data2[1]))
+                    lambda _, data: self.signal_hart_rate_data.emit(data[1]))
                 logger.info('接收心率数据中')
-                while client.is_connected:
+
+                while self.is_running and self.client.is_connected:
                     await asyncio.sleep(1)
 
-        asyncio.run(connect_device(self.address))
+                # 设备连接断开
+                if self.client.is_connected:
+                    await self.client.stop_notify(HEART_RATE_MEASUREMENT_UUID)
+                    await self.client.disconnect()
+                    self.signal_hart_rate_data.emit(-1)
+                    logger.info('设备断开连接')
+
+            except Exception as e:
+                err_msg = f"连接/接收数据异常：{str(e)}"
+                logger.error(err_msg)
+                self.signal_connect_status.emit(err_msg)
+
+        asyncio.run(connect_device())
+
+    def stop(self):
+        """外部调用此方法，优雅停止线程"""
+        logger.info("开始停止蓝牙连接线程")
+        self.is_running = False  # 置为False，让循环退出
+        # 等待线程结束（最多等3秒，避免卡死）
+        self.quit()
+        # self.wait()
+        logger.info("蓝牙连接线程已停止")
