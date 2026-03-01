@@ -15,16 +15,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGridLayout, QGroupBox, QHBoxLayout,
-    QHeaderView, QLayout, QLineEdit, QMainWindow,
-    QPushButton, QSizePolicy, QTableWidget, QTableWidgetItem,
-    QTextBrowser, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QGridLayout, QGroupBox,
+    QHBoxLayout, QHeaderView, QLayout, QLineEdit,
+    QMainWindow, QPushButton, QSizePolicy, QStatusBar,
+    QTableWidget, QTableWidgetItem, QTextBrowser, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(550, 274)
+        MainWindow.resize(652, 274)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -47,6 +48,8 @@ class Ui_MainWindow(object):
         __qtablewidgetitem1.setFont(font);
         self.tableWidget_devicesList.setHorizontalHeaderItem(1, __qtablewidgetitem1)
         self.tableWidget_devicesList.setObjectName(u"tableWidget_devicesList")
+        self.tableWidget_devicesList.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.tableWidget_devicesList.horizontalHeader().setVisible(True)
 
         self.gridLayout_2.addWidget(self.tableWidget_devicesList, 0, 0, 1, 1)
 
@@ -114,9 +117,10 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addLayout(self.verticalLayout)
 
-        self.horizontalLayout.setStretch(0, 3)
-        self.horizontalLayout.setStretch(1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
+        self.statusBar = QStatusBar(MainWindow)
+        self.statusBar.setObjectName(u"statusBar")
+        MainWindow.setStatusBar(self.statusBar)
 
         self.retranslateUi(MainWindow)
 
