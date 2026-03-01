@@ -3,7 +3,6 @@ import logging
 import time
 
 import requests
-from PySide6.QtCore import Signal
 from bleak import BleakScanner, BleakClient
 
 # 心率服务和特征UUID
@@ -37,6 +36,57 @@ def _handle_heart_rate_notification(data1: str, data2: bytearray):
     )
 
 
+def scan_devices():
+    """
+    扫描到的蓝牙设备名称与地址
+    :return: device_list = [(name, address)]
+    """
+    device_list = []
+    try:
+
+        # 异步扫描设备, 获取带有心率服务UUID的设备
+        devices = asyncio.run(
+            BleakScanner.discover(
+                timeout=5.0,
+                filters={"service_uuids": [HEART_RATE_SERVICE_UUID.lower()]}
+            )
+        )
+
+        # 整理设备列表（名称, 地址）
+        for d in devices:
+            device_name = d.name if d.name else f"未知设备({d.address[:8]})"
+            device_list.append((device_name, d.address))
+
+        logger.info(f"蓝牙扫描完成，找到{len(device_list)}个心率设备")
+
+    except Exception as e:
+        err_msg = f"扫描失败：{str(e)}"
+
+        logger.error(err_msg)
+    finally:
+        return device_list
+
+
+async def connect_device(address: str):
+
+    async with BleakClient(address) as client:
+        logger.info('连接中')
+
+        if not client.is_connected:
+            logger.info('连接失败')
+            return
+
+        name = await client.read_gatt_char(DEVICE_NAME_UUID)
+        heart_rate_data['device_id'] = name.decode()
+        print(f'已连接到:{heart_rate_data["device_id"]}')
+
+        await client.start_notify(HEART_RATE_MEASUREMENT_UUID,
+                                  _handle_heart_rate_notification)
+        logger.info('接收心率数据中')
+        while client.is_connected:
+            await asyncio.sleep(1)
+
+
 class BluetoothDevicesProcess:
     # 定义信号
     # scan_finished = Signal(list)  # 扫描完成，传递设备列表[(name, address), ...]
@@ -44,72 +94,23 @@ class BluetoothDevicesProcess:
     # connect_success = Signal(str)  # 连接成功（设备名称）
     # connect_failed = Signal(str)  # 连接失败
 
-    def __init__(self):
-        self.is_scanning = False
 
-    def disconnect_device(self):
-        # TODO
-        print(1)
+
+    # def disconnect_device(self):
+    #     print(1)
 
     # 异步任务：获取心率通知
-    async def connect_device(self, address: str):
-
-        async with BleakClient(address) as client:
-            logger.info('连接中')
-
-            if not client.is_connected:
-                logger.info('连接失败')
-                return
-
-            name = await client.read_gatt_char(DEVICE_NAME_UUID)
-            heart_rate_data['device_id'] = name.decode()
-            print(f'已连接到:{heart_rate_data["device_id"]}')
-
-            await client.start_notify(HEART_RATE_MEASUREMENT_UUID,
-                                      _handle_heart_rate_notification)
-            logger.info('接收心率数据中')
-            while client.is_connected:
-                await asyncio.sleep(1)
-
-    def scan_devices(self):
-        """
-        扫描到的蓝牙设备
-        :return: 扫描到的蓝牙设备名称与地址
-        """
-        self.is_scanning = True
-        try:
-            # 异步扫描设备（过滤心率服务UUID）
-            devices = asyncio.run(
-                BleakScanner.discover(
-                    timeout=10.0,
-                    filters={"service_uuids": [HEART_RATE_SERVICE_UUID.lower()]}
-                )
-            )
-            # 整理设备列表（名称+地址）
-            device_list = []
-            for d in devices:
-                device_name = d.name if d.name else f"未知设备({d.address[:8]})"
-                device_list.append((device_name, d.address))
-
-            # self.scan_finished.emit(device_list)
-            logger.info(f"蓝牙扫描完成，找到{len(device_list)}个心率设备")
-
-        except Exception as e:
-            err_msg = f"扫描失败：{str(e)}"
-
-            logger.error(err_msg)
-        finally:
-            self.is_scanning = False
-            return device_list
+    pass
 
 
 if __name__ == '__main__':
-    bdp = BluetoothDevicesProcess()
+    print(scan_devices())
+    # bdp = BluetoothDevicesProcess()
     # devices = bdp.scan_devices()
     # for d in devices:
     #     print(d)
     # 正确写法：用 asyncio.run() 运行协程
-    asyncio.run(bdp.connect_device(address='F7:1F:00:73:7F:67'))
+    # asyncio.run(connect_device(address='F7:1F:00:73:7F:67'))
     # try:
     #     asyncio.run(run_hr_monitor())
     # except KeyboardInterrupt:

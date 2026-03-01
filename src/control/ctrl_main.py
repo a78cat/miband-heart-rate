@@ -3,10 +3,11 @@ import logging
 import threading
 
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem
 from flask import Flask
 from werkzeug.serving import make_server
 
+from src.core.connectDevice import scan_devices
 from src.route.rt_index import register_index_routes
 from src.view.ui_main import Ui_MainWindow
 
@@ -21,31 +22,31 @@ HTTP_SERVER_PORT = 5001
 
 # 蓝牙设备连接线程
 # class BluetoothConnectThread(QThread):
-    # 定义信号：连接成功、失败、心率数据更新
-    # connect_success = Signal(str)  # 传递设备名称
-    # connect_failed = Signal(str)  # 传递失败原因
-    # heart_rate_update = Signal(int)  # 传递心率值
-    #
-    # def __init__(self):
-    #     super().__init__()
-    #     self.is_running = False
-    #
-    # def run(self):
-    #     """线程执行体：运行蓝牙异步任务"""
-    #     self.is_running = True
-    #     try:
-    #         # 运行异步蓝牙监控函数
-    #         asyncio.run(run_hr_monitor())
-    #     except Exception as e:
-    #         err_msg = f"设备连接失败：{str(e)}"
-    #         self.connect_failed.emit(err_msg)
-    #         self.is_running = False
-    #
-    # def stop(self):
-    #     """停止蓝牙连接线程"""
-    #     self.is_running = False
-    #     self.quit()
-    #     self.wait()
+# 定义信号：连接成功、失败、心率数据更新
+# connect_success = Signal(str)  # 传递设备名称
+# connect_failed = Signal(str)  # 传递失败原因
+# heart_rate_update = Signal(int)  # 传递心率值
+#
+# def __init__(self):
+#     super().__init__()
+#     self.is_running = False
+#
+# def run(self):
+#     """线程执行体：运行蓝牙异步任务"""
+#     self.is_running = True
+#     try:
+#         # 运行异步蓝牙监控函数
+#         asyncio.run(run_hr_monitor())
+#     except Exception as e:
+#         err_msg = f"设备连接失败：{str(e)}"
+#         self.connect_failed.emit(err_msg)
+#         self.is_running = False
+#
+# def stop(self):
+#     """停止蓝牙连接线程"""
+#     self.is_running = False
+#     self.quit()
+#     self.wait()
 
 
 class FlaskServerThread(QThread):
@@ -84,6 +85,15 @@ class FlaskServerThread(QThread):
                 logger.error(f"HTTP服务停止失败：{str(e)}")
 
 
+class ScanBluetoothDevicesThread(QThread):
+    signal_devices_list = Signal(list)
+
+    def run(self):
+        logger.info("执行扫描蓝牙设备")
+        device_list = scan_devices()
+        self.signal_devices_list.emit(device_list)
+
+
 class MainApp(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
@@ -94,17 +104,35 @@ class MainApp(QMainWindow, Ui_MainWindow):
 
         self.init_slot()
         self.flask_thread: FlaskServerThread = None
-        # self.bluetooth_thread: BluetoothConnectThread = None
-        self.app = Flask(__name__)
-        register_index_routes(self.app)
+        self.bluetooth_thread: ScanBluetoothDevicesThread = None
 
     def init_slot(self):
-        # self.pushButton_connectDevice.clicked.connect(self.slot_pushButton_connectDevice)
+        self.pushButton_scanDevice.clicked.connect(self.slot_pushButton_scanDevice)
         self.pushButton_openHttp.clicked.connect(self.slot_pushButton_openHttp)
         self.pushButton_closeHttp.clicked.connect(self.slot_pushButton_closeHttp)
 
-    def slot_pushButton_connectDevice(self):
-        logger.info("用户点击了连接设备按钮")
+    def devices_list_process(self, data: list):
+        self.tableWidget_devicesList.setRowCount(0)
+        self.tableWidget_devicesList.resizeColumnsToContents()
+        for i in data:
+
+            self.textBrowser_log.append(i[0] + '' + i[1])
+
+            row = self.tableWidget_devicesList.rowCount()
+            self.tableWidget_devicesList.insertRow(row)
+            self.tableWidget_devicesList.setItem(row, 0, QTableWidgetItem(i[0]))
+            self.tableWidget_devicesList.setItem(row, 1, QTableWidgetItem(i[1]))
+
+            print(i)
+
+    def slot_pushButton_scanDevice(self):
+        logger.info("用户点击了按钮-扫描设备")
+
+        self.bluetooth_thread = ScanBluetoothDevicesThread()
+        self.bluetooth_thread.start()
+        self.bluetooth_thread.signal_devices_list.connect(self.devices_list_process)
+        # self.bluetooth_thread.get_device()
+
         # # 防止重复连接
         # if self.bluetooth_thread is not None and self.bluetooth_thread.is_running:
         #     QMessageBox.warning(self, "提示", "设备正在连接中，请勿重复点击！")
@@ -135,7 +163,11 @@ class MainApp(QMainWindow, Ui_MainWindow):
                 QMessageBox.warning(self, "提示", "HTTP服务已启动，请勿重复点击！")
                 return
 
-        self.flask_thread = FlaskServerThread(self.app)
+        app = Flask(__name__)
+        # 新开一个线程 以免卡死
+        self.flask_thread = FlaskServerThread(app=app)
+        # 绑定http路由
+        register_index_routes(app)
         # 绑定线程信号
         self.flask_thread.start_success.connect(
             lambda: QMessageBox.information(self, "成功", "HTTP服务启动成功！")
